@@ -23,6 +23,10 @@ terraform {
 provider "aws" {
   region = var.aws_region
 
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
+
   default_tags {
     tags = {
       Project   = "platform-s3-example"
@@ -45,7 +49,7 @@ module "app_bucket" {
   noncurrent_version_expiration_days = 90
 
   tags = {
-    Team    = "platform-engineering"
+    Team       = "platform-engineering"
     CostCenter = "infra-001"
   }
 }

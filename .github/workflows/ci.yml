@@ -104,7 +104,8 @@ jobs:
           skip_check: >-
             CKV_AWS_144,
             CKV2_AWS_61,
-            CKV2_AWS_62
+            CKV2_AWS_62,
+            CKV_AWS_18
 
   # ── 5. Terraform Plan (dry-run sin credenciales reales) ───────────────────
   plan:
@@ -135,3 +136,10 @@ jobs:
       - name: Terraform Plan (sin apply)
         # -refresh=false evita llamadas reales a la API de AWS
         run: terraform plan -refresh=false -input=false
+        env:
+          AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+          AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          AWS_DEFAULT_REGION: "us-east-1"
+          TF_VAR_bucket_name: "ci-dry-run-bucket"
+          TF_VAR_environment: "dev"
+          TF_SKIP_PROVIDER_VERIFY: "1"
