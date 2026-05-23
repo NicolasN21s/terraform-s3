@@ -131,9 +131,7 @@ jobs:
           terraform_version: "1.8.5"
 
       - name: Terraform Init
-        run: terraform init -backend=false -upgrade
-        env:
-          TF_CLI_ARGS: "no-color"
+        run: terraform init -backend=false
 
       - name: Terraform Plan (sin apply)
         # -refresh=false evita llamadas reales a la API de AWS
