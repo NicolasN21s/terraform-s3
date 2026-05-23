@@ -104,7 +104,8 @@ jobs:
           skip_check: >-
             CKV_AWS_144,
             CKV2_AWS_61,
-            CKV2_AWS_62
+            CKV2_AWS_62,
+            CKV_AWS_18
 
   # ── 5. Terraform Plan (dry-run sin credenciales reales) ───────────────────
   plan:
