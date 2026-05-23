@@ -45,7 +45,7 @@ module "app_bucket" {
   noncurrent_version_expiration_days = 90
 
   tags = {
-    Team    = "platform-engineering"
+    Team       = "platform-engineering"
     CostCenter = "infra-001"
   }
 }
