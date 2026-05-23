@@ -1,0 +1,8 @@
+# Archivo de ejemplo. Copia este archivo como terraform.tfvars y ajusta los valores.
+# NO subas terraform.tfvars al repositorio, está en .gitignore.
+
+aws_region  = "us-east-1"
+bucket_name = "my-platform-app-bucket-dev"
+environment = "dev"
+
+# kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/mrk-abc123"

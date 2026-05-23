@@ -1,0 +1,137 @@
+# CI – Validación de calidad del módulo Terraform
+# Se ejecuta en cada Pull Request hacia la rama main.
+
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write   # Permite que el bot comente resultados en el PR
+
+jobs:
+  # ── 1. Formato ──
+  fmt:
+    name: "Terraform Format"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.5"
+
+      - name: Check formatting (root)
+        run: terraform fmt -check -recursive
+        working-directory: .
+
+  # ── 2. Validación de sintaxis ─────
+  validate:
+    name: "Terraform Validate"
+    runs-on: ubuntu-latest
+    needs: fmt
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.5"
+
+      - name: Terraform Init (módulo)
+        run: terraform init -backend=false
+        working-directory: modules/s3
+
+      - name: Terraform Validate (módulo)
+        run: terraform validate
+        working-directory: modules/s3
+
+      - name: Terraform Init (raíz)
+        run: terraform init -backend=false
+        working-directory: .
+
+      - name: Terraform Validate (raíz)
+        run: terraform validate
+        working-directory: .
+
+  # ── 3. Análisis estático de seguridad (tfsec) ───
+  security:
+    name: "Security Scan – tfsec"
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: false          # Falla el job si hay hallazgos HIGH/CRITICAL
+          format: lovely
+          additional_args: >-
+            --exclude-downloaded-modules
+            --minimum-severity MEDIUM
+
+  # ── 4. Análisis estático de seguridad (Checkov) ────────────────────────────
+  checkov:
+    name: "Security Scan – Checkov"
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: cli
+          soft_fail: false
+          skip_check: >-
+            CKV_AWS_144,
+            CKV2_AWS_61,
+            CKV2_AWS_62
+
+  # ── 5. Terraform Plan (dry-run sin credenciales reales) ───────────────────
+  plan:
+    name: "Terraform Plan (dry-run)"
+    runs-on: ubuntu-latest
+    needs: [security, checkov]
+
+    env:
+      # Credenciales ficticias para que el provider no falle en init/plan --refresh=false
+      AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      AWS_DEFAULT_REGION: "us-east-1"
+      TF_VAR_bucket_name: "ci-dry-run-bucket-example"
+      TF_VAR_environment: "dev"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.5"
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Plan (sin apply)
+        # -refresh=false evita llamadas reales a la API de AWS
+        run: terraform plan -refresh=false -input=false

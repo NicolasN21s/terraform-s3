@@ -1,0 +1,33 @@
+# Terraform state files – NUNCA subir al repositorio
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Directorio de trabajo de Terraform
+.terraform/
+.terraform.lock.hcl
+
+# Variables con datos sensibles
+terraform.tfvars
+*.auto.tfvars
+
+# Archivos de plan binario
+*.tfplan
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Archivos de CLI de Terraform
+.terraformrc
+terraform.rc
+
+# Variables de entorno locales
+.env
+.env.*
