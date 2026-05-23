@@ -6,3 +6,5 @@ bucket_name = "my-platform-app-bucket-dev"
 environment = "dev"
 
 # kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/mrk-abc123"
+
+# test pipeline
